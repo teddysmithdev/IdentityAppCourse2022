@@ -4,6 +4,7 @@ using IdentityAppCourse2022.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using System.Security.Claims;
 
 namespace IdentityAppCourse2022.Controllers
@@ -11,16 +12,19 @@ namespace IdentityAppCourse2022.Controllers
     public class AccountController : Controller
     {
         private readonly UserManager<IdentityUser> _userManager;
+        private readonly RoleManager<IdentityRole> _roleManager;
         private readonly SignInManager<IdentityUser> _signInManager;
         private readonly ISendGridEmail _sendGridEmail;
 
         public AccountController(UserManager<IdentityUser> userManager, 
             SignInManager<IdentityUser> signInManager,
-            ISendGridEmail sendGridEmail)
+            ISendGridEmail sendGridEmail,
+            RoleManager<IdentityRole> roleManager)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _sendGridEmail = sendGridEmail;
+            _roleManager = roleManager;
         }
 
         [HttpPost]
@@ -42,7 +46,7 @@ namespace IdentityAppCourse2022.Controllers
                 var result = await _userManager.CreateAsync(user);
                 if (result.Succeeded)
                 {
-                    //await _userManager.AddToRoleAsync(user, "User");
+                    await _userManager.AddToRoleAsync(user, "Pokemon");
                     result = await _userManager.AddLoginAsync(user, info);
                     if (result.Succeeded)
                     {
@@ -193,7 +197,26 @@ namespace IdentityAppCourse2022.Controllers
 
         public async Task<IActionResult> Register(string? returnUrl = null)
         {
+            if(!await _roleManager.RoleExistsAsync("Pokemon"))
+            {
+                await _roleManager.CreateAsync(new IdentityRole("Pokemon"));
+                await _roleManager.CreateAsync(new IdentityRole("Trainer"));
+            }
+
+            List<SelectListItem> listItems = new List<SelectListItem>();
+            listItems.Add(new SelectListItem()
+            {
+                Value = "Pokemon",
+                Text = "Pokemon"
+            });
+            listItems.Add(new SelectListItem()
+            {
+                Value = "Trainer",
+                Text = "Trainer"
+            });
+
             RegisterViewModel registerViewModel = new RegisterViewModel();
+            registerViewModel.RoleList = listItems;
             registerViewModel.ReturnUrl = returnUrl;
             return View(registerViewModel);
         }
@@ -209,6 +232,14 @@ namespace IdentityAppCourse2022.Controllers
                 var result = await _userManager.CreateAsync(user, registerViewModel.Password);
                 if(result.Succeeded)
                 {
+                    if(registerViewModel.RoleSelected != null && registerViewModel.RoleSelected.Length > 0 && registerViewModel.RoleSelected=="Trainer")
+                    {
+                        await _userManager.AddToRoleAsync(user, "Trainer");
+                    }
+                    else
+                    {
+                        await _userManager.AddToRoleAsync(user, "Pokemon");
+                    }
                     await _signInManager.SignInAsync(user, isPersistent: false);
                     return LocalRedirect(returnUrl);
                 }
