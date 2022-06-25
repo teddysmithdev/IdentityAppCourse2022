@@ -11,13 +11,13 @@ namespace IdentityAppCourse2022.Controllers
 {
     public class AccountController : Controller
     {
-        private readonly UserManager<IdentityUser> _userManager;
+        private readonly UserManager<AppUser> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
-        private readonly SignInManager<IdentityUser> _signInManager;
+        private readonly SignInManager<AppUser> _signInManager;
         private readonly ISendGridEmail _sendGridEmail;
 
-        public AccountController(UserManager<IdentityUser> userManager, 
-            SignInManager<IdentityUser> signInManager,
+        public AccountController(UserManager<AppUser> userManager, 
+            SignInManager<AppUser> signInManager,
             ISendGridEmail sendGridEmail,
             RoleManager<IdentityRole> roleManager)
         {

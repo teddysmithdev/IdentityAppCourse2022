@@ -11,9 +11,9 @@ namespace IdentityAppCourse2022.Controllers
     public class UserController : Controller
     {
         private readonly ApplicationDbContext _db;
-        private readonly UserManager<IdentityUser> _userManager;
+        private readonly UserManager<AppUser> _userManager;
 
-        public UserController(ApplicationDbContext db, UserManager<IdentityUser> userManager)
+        public UserController(ApplicationDbContext db, UserManager<AppUser> userManager)
         {
             _db = db;
             _userManager = userManager;
